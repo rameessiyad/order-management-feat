@@ -11,7 +11,9 @@ interface MenuItemCardProps {
 }
 
 export default function MenuItemCard({ item }: MenuItemCardProps) {
-  const { addToCart } = useCart();
+  const { cart, addToCart, increaseQuantity, decreaseQuantity } = useCart();
+
+  const cartItem = cart.find((cartItem) => cartItem.menuItem.id === item.id);
 
   return (
     <Card className="overflow-hidden rounded-xl shadow-sm">
@@ -34,10 +36,36 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
         <p className="text-lg font-bold">₹{item.price}</p>
       </CardContent>
 
-      <CardFooter>
-        <Button className="w-full" onClick={() => addToCart(item)}>
-          Add to Cart
-        </Button>
+      <CardFooter className="block">
+        {!cartItem ? (
+          <Button onClick={() => addToCart(item)} className="rounded-full w-full">
+            Add to Cart
+          </Button>
+        ) : (
+          <div className="flex items-center justify-center gap-2 rounded-full border p-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => decreaseQuantity(item.id)}
+            >
+              -
+            </Button>
+
+            <span className="w-6 text-center font-semibold">
+              {cartItem.quantity}
+            </span>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => increaseQuantity(item.id)}
+            >
+              +
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
