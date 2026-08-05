@@ -6,10 +6,14 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from 'generated/prisma/enums';
+import { OrderStatusSimulatorService } from 'src/order-status/order-status-simulator.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private simulator: OrderStatusSimulatorService,
+  ) {}
 
   async create(dto: CreateOrderDto) {
     const menuItemIds = dto.items.map((i) => i.menuItemId);
@@ -37,7 +41,7 @@ export class OrdersService {
       };
     });
 
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         customerName: dto.customerName,
         address: dto.address,
@@ -47,6 +51,10 @@ export class OrdersService {
       },
       include: { items: { include: { menuItem: true } } },
     });
+
+    this.simulator.startSimulation(order.id);
+
+    return order;
   }
 
   findAll() {
