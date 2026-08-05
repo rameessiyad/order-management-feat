@@ -51,17 +51,17 @@ export default function OrderPage({ params }: PageProps) {
 
       const socket = connectSocket();
 
-      socket.emit("joinOrder", id);
+      socket.emit("subscribeToOrder", id);
 
-      socket.on("orderStatusUpdated", (updatedOrder) => {
-        console.log("STATUS UPDATED:", updatedOrder);
+      socket.on("orderStatusUpdate", (data) => {
+        console.log("STATUS UPDATE:", data);
 
         setOrder((prev) => {
-          if (!prev) return updatedOrder;
+          if (!prev) return prev;
 
           return {
             ...prev,
-            status: updatedOrder.status,
+            status: data.status,
           };
         });
       });
