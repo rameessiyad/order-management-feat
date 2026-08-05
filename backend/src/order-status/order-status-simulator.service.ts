@@ -10,7 +10,7 @@ const STATUS_FLOW: OrderStatus[] = [
   OrderStatus.DELIVERED,
 ];
 
-const STEP_DELAY_MS = 8000;
+const STEP_DELAY_MS = 10000;
 
 @Injectable()
 export class OrderStatusSimulatorService {

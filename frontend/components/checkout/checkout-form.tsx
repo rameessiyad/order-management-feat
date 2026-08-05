@@ -41,9 +41,12 @@ export default function CheckoutForm() {
         })),
       });
 
-      clearCart();
+      console.log("CREATED ORDER:", order);
 
-      router.push(`/orders/${order.id}`);
+      // router.push(`/orders/${order.id}`);
+      window.location.href = `/orders/${order.id}`;
+
+      clearCart();
     } catch (error) {
       alert(error instanceof Error ? error.message : "Something went wrong.");
     } finally {
@@ -108,7 +111,7 @@ export default function CheckoutForm() {
             />
           </div>
 
-          <Button className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Placing Order..." : "Place Order"}
           </Button>
         </form>
