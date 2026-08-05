@@ -9,23 +9,19 @@ import OrderDetails from "@/components/order/order-details";
 import OrderStatusTracker from "@/components/order/order-status-tracker";
 import Navbar from "@/components/common/navbar";
 import { connectSocket, disconnectSocket } from "@/lib/socket";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
-interface PageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-export default function OrderPage({ params }: PageProps) {
+export default function OrderPage() {
+  const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
-  const [orderId, setOrderId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchOrder() {
       try {
-        const { id } = await params;
-
         console.log("ORDER ID:", id);
 
         const data = await api.getOrder(Number(id));
@@ -41,39 +37,33 @@ export default function OrderPage({ params }: PageProps) {
     }
 
     fetchOrder();
-  }, [params]);
+  }, [id]);
 
   useEffect(() => {
-    async function setupOrder() {
-      const { id } = await params;
+    if (!id) return;
 
-      setOrderId(id);
+    const socket = connectSocket();
 
-      const socket = connectSocket();
+    socket.emit("subscribeToOrder", Number(id));
 
-      socket.emit("subscribeToOrder", id);
+    socket.on("orderStatusUpdate", (data) => {
+      console.log("STATUS UPDATE:", data);
 
-      socket.on("orderStatusUpdate", (data) => {
-        console.log("STATUS UPDATE:", data);
+      setOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: data.status,
+            }
+          : prev,
+      );
+    });
 
-        setOrder((prev) => {
-          if (!prev) return prev;
-
-          return {
-            ...prev,
-            status: data.status,
-          };
-        });
-      });
-
-      return () => {
-        socket.off("orderStatusUpdated");
-        disconnectSocket();
-      };
-    }
-
-    setupOrder();
-  }, [params]);
+    return () => {
+      socket.off("orderStatusUpdate");
+      disconnectSocket();
+    };
+  }, [id]);
 
   if (loading) {
     return (
@@ -100,6 +90,10 @@ export default function OrderPage({ params }: PageProps) {
 
           <p className="text-muted-foreground">Track your food delivery</p>
         </div>
+
+        <Button variant="outline" onClick={() => router.push("/")}>
+          ← Back to Menu
+        </Button>
 
         <OrderStatusTracker status={order.status} />
 

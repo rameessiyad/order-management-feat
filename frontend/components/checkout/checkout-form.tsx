@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useCart } from "@/app/context/cart-context";
 
@@ -11,10 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
-export default function CheckoutForm() {
-  const router = useRouter();
+interface CheckoutFormProps {
+  onRedirecting: () => void;
+}
 
+export default function CheckoutForm({ onRedirecting }: CheckoutFormProps) {
   const { cart, clearCart } = useCart();
 
   const [loading, setLoading] = useState(false);
@@ -24,6 +27,8 @@ export default function CheckoutForm() {
     phone: "",
     address: "",
   });
+
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,14 +46,15 @@ export default function CheckoutForm() {
         })),
       });
 
-      console.log("CREATED ORDER:", order);
-
-      // router.push(`/orders/${order.id}`);
-      window.location.href = `/orders/${order.id}`;
+      onRedirecting();
 
       clearCart();
+
+      window.location.href = `/orders/${order.id}`;
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Something went wrong.");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
     } finally {
       setLoading(false);
     }
@@ -83,11 +89,16 @@ export default function CheckoutForm() {
 
             <Input
               id="phone"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]{10}"
+              title="Please enter a valid 10-digit phone number"
+              maxLength={10}
               value={form.phone}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  phone: e.target.value,
+                  phone: e.target.value.replace(/\D/g, ""),
                 })
               }
               required
