@@ -20,14 +20,18 @@ export default function HomePage() {
   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
-    const fetchMenu = async () => {
+    const fetchMenu = async (retry = 3) => {
       try {
         const data = await api.getMenu();
         setMenu(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load menu.");
-      } finally {
         setLoading(false);
+      } catch (err) {
+        if (retry > 0) {
+          setTimeout(() => fetchMenu(retry - 1), 3000);
+        } else {
+          setError("Failed to load menu.");
+          setLoading(false);
+        }
       }
     };
 
