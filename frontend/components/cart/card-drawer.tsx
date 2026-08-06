@@ -29,16 +29,16 @@ export default function CartDrawer() {
 
   return (
     <Sheet>
-      <SheetTrigger>
-        <Button variant="outline" size="icon" className="relative rounded-full">
-          <ShoppingCart className="h-5 w-5" />
+      <SheetTrigger
+        render={<Button variant="outline" size="icon" className="relative" />}
+      >
+        <ShoppingCart className="h-5 w-5" />
 
-          {totalItems > 0 && (
-            <Badge className="absolute -right-2 -top-2 h-5 min-w-5 rounded-full px-1">
-              {totalItems}
-            </Badge>
-          )}
-        </Button>
+        {totalItems > 0 && (
+          <Badge className="absolute -right-2 -top-2 h-5 min-w-5 rounded-full px-1">
+            {totalItems}
+          </Badge>
+        )}
       </SheetTrigger>
 
       <SheetContent className="flex w-full flex-col p-0 sm:max-w-md">
